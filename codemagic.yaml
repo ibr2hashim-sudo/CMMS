@@ -14,12 +14,22 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Fix permissions and Build APK
+      - name: Locate and Build APK
         script: |
-          chmod +x app/gradlew || chmod +x gradlew || true
-          ./gradlew assembleRelease --gradle-version 9.3.1
+          # البحث عن ملف gradlew في أي مكان داخل المستودع ومنحه الصلاحية
+          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "الملف غير موجود في الجذر، سيتم البناء عبر أداة النظام مباشرة"
+            gradle assembleRelease
+          else
+            echo "تم العثور على ملف البناء في المسار: $GRADLEW_PATH"
+            GRADLEW_DIR=$(dirname "$GRADLEW_PATH")
+            cd "$GRADLEW_DIR"
+            chmod +x gradlew
+            ./gradlew assembleRelease
+          fi
     artifacts:
-      - app/build/outputs/apk/**/*.apk
+      - "**/build/outputs/apk/**/*.apk"
     publishing:
       email:
         recipients:
