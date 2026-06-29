@@ -10,13 +10,14 @@ workflows:
     triggering:
       events:
         - push
-    scripts:
+   scripts:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Android APK
         script: |
-          ./gradlew assembleRelease
+          chmod +x gradlew
+          sh gradlew assembleRelease
     artifacts:
       - app/build/outputs/apk/**/*.apk
     publishing:
