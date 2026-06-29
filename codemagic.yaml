@@ -14,9 +14,10 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Build Android APK
+      - name: Fix permissions and Build APK
         script: |
-          gradle assembleRelease
+          chmod +x app/gradlew || chmod +x gradlew || true
+          ./gradlew assembleRelease --gradle-version 9.3.1
     artifacts:
       - app/build/outputs/apk/**/*.apk
     publishing:
