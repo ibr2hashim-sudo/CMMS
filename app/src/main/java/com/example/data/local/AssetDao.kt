@@ -15,7 +15,7 @@ interface AssetDao {
     fun getAllAssets(): Flow<List<Asset>>
 
     @Query("SELECT * FROM assets WHERE id = :id LIMIT 1")
-    suspend fun getAssetById(id: Int): Asset?
+    suspend fun getAssetById(id: String): Asset?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAsset(asset: Asset): Long

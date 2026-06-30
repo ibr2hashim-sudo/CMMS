@@ -13,7 +13,7 @@ interface TransferDao {
     fun getAllTransfers(): Flow<List<TransferRecord>>
 
     @Query("SELECT * FROM transfer_records WHERE assetId = :assetId ORDER BY transferDate DESC")
-    fun getTransfersForAsset(assetId: Int): Flow<List<TransferRecord>>
+    fun getTransfersForAsset(assetId: String): Flow<List<TransferRecord>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransfer(record: TransferRecord): Long

@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "transfer_records")
 data class TransferRecord(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val assetId: Int,
+    val assetId: String,
     val fromDepartmentId: Int,
     val toDepartmentId: Int,
     val transferDate: Long,

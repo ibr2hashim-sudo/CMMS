@@ -60,6 +60,8 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
     BackHandler(enabled = true) {
         if (currentScreen == "add_device") {
             currentScreen = "main"
+        } else if (selectedTab != 0) {
+            selectedTab = 0
         } else {
             showExitDialog = true
         }

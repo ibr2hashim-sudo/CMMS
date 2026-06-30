@@ -79,7 +79,7 @@ class AssetRepository(
     }
 
     suspend fun transferAsset(
-        assetId: Int,
+        assetId: String,
         fromDeptId: Int,
         toDeptId: Int,
         authorizedBy: String,
