@@ -52,11 +52,9 @@ class CsvImportService(private val context: Context) {
                     val asset = Asset(
                         id = assetCode,
                         name = deviceName,
-                        category = departmentName,
                         serialNumber = serialNumber,
                         type = type,
                         description = notes,
-                        cost = 0.0,
                         purchaseDate = System.currentTimeMillis(),
                         currentDepartmentId = 1, // رقم افتراضي للقسم
                         status = status,

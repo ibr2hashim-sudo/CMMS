@@ -56,7 +56,7 @@ fun AssetsTab(
     onSearchChanged: (String) -> Unit,
     onTypeChanged: (String) -> Unit,
     onDeptIdChanged: (Int?) -> Unit,
-    onAddAsset: (String, String, String, String, String, Double, Int, String, String, Int, String?, String, String, String) -> Unit,
+    onAddAsset: (String, String, String, String, Int, String, String, Int, String?, String, String, String) -> Unit,
     onUpdateAsset: (Asset) -> Unit,
     onDeleteAsset: (Asset) -> Unit,
     onTransferAsset: (String, Int, Int, String, String) -> Unit,
@@ -441,8 +441,8 @@ fun AssetsTab(
         AddAssetDialog(
             departments = departments,
             onDismiss = { showAddDialog = false },
-            onSave = { name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer ->
-                onAddAsset(name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer)
+            onSave = { name, serial, type, desc, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer ->
+                onAddAsset(name, serial, type, desc, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer)
                 showAddDialog = false
             }
         )
@@ -784,14 +784,12 @@ fun ConditionIndicator(condition: String, modifier: Modifier = Modifier) {
 fun AddAssetDialog(
     departments: List<Department>,
     onDismiss: () -> Unit,
-    onSave: (String, String, String, String, String, Double, Int, String, String, Int, String?, String, String, String) -> Unit
+    onSave: (String, String, String, String, Int, String, String, Int, String?, String, String, String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var serialNumber by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("طبي") } // طبي، أثاث، ...
-    var category by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var costStr by remember { mutableStateOf("") }
     var selectedDeptId by remember { mutableStateOf<Int?>(null) }
     var selectedCondition by remember { mutableStateOf("NEW") } // NEW, EXCELLENT, GOOD, POOR
     
@@ -1006,27 +1004,7 @@ fun AddAssetDialog(
                     }
                 }
 
-                // Category & Cost
-                item {
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = { category = it },
-                        label = { Text("التصنيف الدقيق (اختياري)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-
-                item {
-                    OutlinedTextField(
-                        value = costStr,
-                        onValueChange = { costStr = it },
-                        label = { Text("قيمة الأصل / تكلفة الاستحواذ (ريال)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true
-                    )
-                }
+                // Category & Cost removed
 
                 // Initial Department Dropdown
                 item {
@@ -1146,14 +1124,13 @@ fun AddAssetDialog(
                         }
                         Button(
                             onClick = {
-                                val cost = costStr.toDoubleOrNull() ?: 0.0
                                 val qty = quantityStr.toIntOrNull() ?: 1
                                 if (name.isBlank()) nameError = true
                                 if (serialNumber.isBlank()) serialError = true
                                 if (selectedDeptId == null) deptError = true
 
                                 if (name.isNotBlank() && serialNumber.isNotBlank() && selectedDeptId != null) {
-                                    onSave(name, serialNumber, selectedType, category, description, cost, selectedDeptId!!, selectedCondition, model, qty, imageUri, assetCode, accessories, manufacturer)
+                                    onSave(name, serialNumber, selectedType, description, selectedDeptId!!, selectedCondition, model, qty, imageUri, assetCode, accessories, manufacturer)
                                 }
                             },
                             modifier = Modifier
@@ -1179,9 +1156,7 @@ fun EditAssetDialog(
     var name by remember { mutableStateOf(assetDetails.asset.name) }
     var serialNumber by remember { mutableStateOf(assetDetails.asset.serialNumber) }
     var selectedType by remember { mutableStateOf(assetDetails.asset.type) }
-    var category by remember { mutableStateOf(assetDetails.asset.category) }
     var description by remember { mutableStateOf(assetDetails.asset.description) }
-    var costStr by remember { mutableStateOf(assetDetails.asset.cost.toString()) }
     var selectedDeptId by remember { mutableStateOf<Int>(assetDetails.asset.currentDepartmentId) }
     var selectedCondition by remember { mutableStateOf(assetDetails.asset.condition) }
     var selectedStatus by remember { mutableStateOf(assetDetails.asset.status) }
@@ -1372,26 +1347,7 @@ fun EditAssetDialog(
                     }
                 }
 
-                item {
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = { category = it },
-                        label = { Text("التصنيف الدقيق (اختياري)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-
-                item {
-                    OutlinedTextField(
-                        value = costStr,
-                        onValueChange = { costStr = it },
-                        label = { Text("قيمة الأصل / تكلفة الاستحواذ") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true
-                    )
-                }
+                // Category & cost removed
 
                 // Department
                 item {
@@ -1547,9 +1503,7 @@ fun EditAssetDialog(
                                         name = name,
                                         serialNumber = serialNumber,
                                         type = selectedType,
-                                        category = category,
                                         description = description,
-                                        cost = costStr.toDoubleOrNull() ?: 0.0,
                                         currentDepartmentId = selectedDeptId,
                                         condition = selectedCondition,
                                         status = selectedStatus,
@@ -1855,8 +1809,6 @@ fun AssetDetailsDialog(
                             DetailItem(label = "الشركة المصنعة:", value = assetDetails.asset.manufacturer.ifBlank { "غير متوفر" }, icon = Icons.Default.PrecisionManufacturing)
                             DetailItem(label = "الكمية المتوفرة:", value = "${assetDetails.asset.quantity} قطع", icon = Icons.Default.Inventory)
                             DetailItem(label = "القسم الحالي:", value = assetDetails.departmentName, icon = Icons.Default.MapsHomeWork)
-                            DetailItem(label = "تصنيف الأصل:", value = assetDetails.asset.category.ifBlank { "غير مصنف" }, icon = Icons.Default.Category)
-                            DetailItem(label = "تكلفة الاستحواذ:", value = currencyFormatter.format(assetDetails.asset.cost), icon = Icons.Default.AttachMoney)
                             DetailItem(
                                 label = "تاريخ التسجيل:",
                                 value = df.format(Date(assetDetails.asset.purchaseDate)),

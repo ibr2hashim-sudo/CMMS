@@ -134,9 +134,7 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
                         name = deviceName,
                         serialNumber = serial.ifBlank { "SN-${System.currentTimeMillis() % 10000}" },
                         type = "BIOMEDICAL",
-                        category = "أجهزة طبية",
                         description = notes,
-                        cost = 0.0,
                         currentDepartmentId = deptId,
                         condition = "GOOD",
                         model = model,
@@ -242,11 +240,10 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
             ) {
                 when (selectedTab) {
                     0 -> DashboardScreen(
+                        departments = departments,
                         assets = assetsWithDetails,
-                        onAddDeviceClick = { currentScreen = "add_device" },
-                        onDeviceClick = { item ->
-                            viewModel.updateSearchQuery(item.asset.id)
-                            viewModel.updateDepartmentFilter(item.asset.currentDepartmentId)
+                        onDepartmentClick = { dept ->
+                            viewModel.updateDepartmentFilter(dept.id)
                             selectedTab = 1
                         }
                     )
@@ -260,8 +257,8 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
                     onSearchChanged = { viewModel.updateSearchQuery(it) },
                     onTypeChanged = { viewModel.updateTypeFilter(it) },
                     onDeptIdChanged = { viewModel.updateDepartmentFilter(it) },
-                    onAddAsset = { name, serial, type, cat, desc, cost, deptId, cond, model, qty, img, code, accessories, manufacturer ->
-                        viewModel.addAsset(id = code, name = name, serialNumber = serial, type = type, category = cat, description = desc, cost = cost, currentDepartmentId = deptId, condition = cond, model = model, quantity = qty, imageUri = img, accessories = accessories, manufacturer = manufacturer)
+                    onAddAsset = { name, serial, type, desc, deptId, cond, model, qty, img, code, accessories, manufacturer ->
+                        viewModel.addAsset(id = code, name = name, serialNumber = serial, type = type, description = desc, currentDepartmentId = deptId, condition = cond, model = model, quantity = qty, imageUri = img, accessories = accessories, manufacturer = manufacturer)
                     },
                     onUpdateAsset = { viewModel.updateAsset(it) },
                     onDeleteAsset = { viewModel.deleteAsset(it) },

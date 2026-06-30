@@ -9,9 +9,7 @@ data class Asset(
     val name: String,
     val serialNumber: String,
     val type: String, // "FIXED" or "MOVABLE"
-    val category: String,
     val description: String,
-    val cost: Double,
     val purchaseDate: Long,
     val currentDepartmentId: Int,
     val status: String, // "ACTIVE", "MAINTENANCE", "SCRAPPED"

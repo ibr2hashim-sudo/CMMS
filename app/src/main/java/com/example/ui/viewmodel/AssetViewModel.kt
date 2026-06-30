@@ -60,8 +60,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
         assets.filter { item ->
             val matchesQuery = query.isBlank() ||
                 item.asset.name.contains(query, ignoreCase = true) ||
-                item.asset.serialNumber.contains(query, ignoreCase = true) ||
-                item.asset.category.contains(query, ignoreCase = true)
+                item.asset.serialNumber.contains(query, ignoreCase = true)
 
             val matchesType = type == "ALL" || item.asset.type == type
             val matchesDept = deptId == null || item.asset.currentDepartmentId == deptId
@@ -89,9 +88,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             name = "خادم رئيسي Dell PowerEdge",
                             serialNumber = "SRV-MX928-11",
                             type = "FIXED",
-                            category = "أجهزة شبكات",
                             description = "خادم قاعدة البيانات الرئيسي مجهز بذاكرة 128 جيجابايت وسعة تخزين سحابية محلية.",
-                            cost = 45000.0,
                             purchaseDate = System.currentTimeMillis() - 31536000000L, // 1 year ago
                             currentDepartmentId = itId.toInt(),
                             status = "ACTIVE",
@@ -110,9 +107,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             name = "حاسوب محمول MacBook Pro 16",
                             serialNumber = "MAC-PRO-0098",
                             type = "MOVABLE",
-                            category = "أجهزة حاسب",
                             description = "جهاز محمول مخصص لمطوري النظم ومصممي الواجهات بالشركة.",
-                            cost = 12000.0,
                             purchaseDate = System.currentTimeMillis() - 15768000000L, // 6 months ago
                             currentDepartmentId = itId.toInt(),
                             status = "ACTIVE",
@@ -131,9 +126,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             name = "طاولة اجتماعات خشبية فاخرة",
                             serialNumber = "FURN-TB-104",
                             type = "FIXED",
-                            category = "أثاث مكتب",
                             description = "طاولة اجتماعات دائرية تتسع لـ 12 شخصاً بقاعة الاجتماعات الكبرى.",
-                            cost = 8500.0,
                             purchaseDate = System.currentTimeMillis() - 94608000000L, // 3 years ago
                             currentDepartmentId = hrId.toInt(),
                             status = "ACTIVE",
@@ -152,9 +145,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             name = "شاشة عرض ذكية 75 بوصة Sony",
                             serialNumber = "TV-SONY-75A",
                             type = "MOVABLE",
-                            category = "أجهزة إلكترونية",
                             description = "شاشة قاعة العروض والتدريب، مجهزة للاتصال اللاسلكي السريع.",
-                            cost = 6200.0,
                             purchaseDate = System.currentTimeMillis() - 7884000000L, // 3 months ago
                             currentDepartmentId = whId.toInt(),
                             status = "ACTIVE",
@@ -192,9 +183,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
         name: String,
         serialNumber: String,
         type: String,
-        category: String,
         description: String,
-        cost: Double,
         currentDepartmentId: Int,
         condition: String,
         model: String = "",
@@ -210,9 +199,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                 name = name,
                 serialNumber = serialNumber,
                 type = type,
-                category = category,
                 description = description,
-                cost = cost,
                 purchaseDate = System.currentTimeMillis(),
                 currentDepartmentId = currentDepartmentId,
                 status = status,
@@ -259,35 +246,33 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     if (tokens.isEmpty()) continue
                     
                     // Map indices dynamically based on header
-                    fun getValueForHeader(arabicName: String, englishName: String): String {
-                        val index = header.indexOfFirst { 
-                            it.equals(arabicName, ignoreCase = true) || it.equals(englishName, ignoreCase = true) 
+                    fun getValueForHeader(vararg names: String): String {
+                        val index = header.indexOfFirst { headerName -> 
+                            names.any { it.equals(headerName, ignoreCase = true) }
                         }
                         return if (index != -1 && index < tokens.size) tokens[index] else ""
                     }
                     
-                    val nameValue = getValueForHeader("الاسم", "name")
+                    val nameValue = getValueForHeader("الاسم", "name", "Device Name")
                     if (nameValue.isBlank()) continue
                     
-                    val serial = getValueForHeader("الرقم التسلسلي", "serialNumber").ifBlank { "SN-${System.currentTimeMillis() % 10000}-$importedCount" }
-                    val type = getValueForHeader("النوع", "type").ifBlank { "MOVABLE" }
-                    val category = getValueForHeader("التصنيف", "category").ifBlank { "عام" }
-                    val description = getValueForHeader("الوصف", "description").ifBlank { "تم استيراده من ملف" }
-                    val cost = getValueForHeader("التكلفة", "cost").toDoubleOrNull() ?: 0.0
-                    val condition = getValueForHeader("الجودة", "condition").ifBlank { "NEW" }
-                    val model = getValueForHeader("الموديل", "model")
-                    val quantity = getValueForHeader("الكمية", "quantity").toIntOrNull() ?: 1
-                    val assetCode = getValueForHeader("كود تعريفي", "assetCode").ifBlank { getValueForHeader("Asset ID", "id") }
+                    val serial = getValueForHeader("الرقم التسلسلي", "serialNumber", "Serial Number")
+                    val type = getValueForHeader("النوع", "type", "Type")
+                    val description = getValueForHeader("الوصف", "description", "Notes")
+                    val condition = getValueForHeader("الجودة", "condition", "Condition")
+                    val model = getValueForHeader("الموديل", "model", "Model")
+                    val quantity = getValueForHeader("الكمية", "quantity", "Quantity").toIntOrNull() ?: 1
+                    val assetCode = getValueForHeader("كود تعريفي", "assetCode", "Asset ID").ifBlank { getValueForHeader("Asset ID", "id") }
                     val idValue = assetCode.ifBlank { System.currentTimeMillis().toString() + "-" + importedCount }
-                    val accessories = getValueForHeader("الملحقات", "accessories")
-                    val manufacturerIdOrName = getValueForHeader("الشركة المصنعة", "manufacturer")
-                    val companyName = getValueForHeader("الشركة", "company")
+                    val accessories = getValueForHeader("الملحقات", "accessories", "Accessories")
+                    val manufacturerIdOrName = getValueForHeader("الشركة المصنعة", "manufacturer", "Manufacturer")
+                    val companyName = getValueForHeader("الشركة", "company", "Company")
                     
                     // Use company name if available, otherwise fallback to manufacturer
                     val manufacturer = if (companyName.isNotBlank()) companyName else manufacturerIdOrName
                     
                     // Check if department exists by name, otherwise use default
-                    val deptName = getValueForHeader("القسم", "department").trim()
+                    val deptName = getValueForHeader("القسم", "department", "Department").trim()
                     var deptId = defaultDeptId
                     if (deptName.isNotBlank()) {
                         val deptKey = deptName.lowercase()
@@ -308,9 +293,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                         name = nameValue,
                         serialNumber = serial,
                         type = type,
-                        category = category,
                         description = description,
-                        cost = cost,
                         purchaseDate = System.currentTimeMillis(),
                         currentDepartmentId = deptId,
                         status = "ACTIVE",
@@ -346,14 +329,12 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
             val model = item.asset.model.replace(",", " ")
             val serial = item.asset.serialNumber.replace(",", " ")
             val type = item.asset.type
-            val category = item.asset.category.replace(",", " ")
             val acc = item.asset.accessories.replace(",", " ")
             val description = item.asset.description.replace(",", " ")
-            val cost = item.asset.cost
             val quantity = item.asset.quantity
             val condition = item.asset.condition
             val deptName = depts[item.asset.currentDepartmentId]?.name ?: "غير محدد"
-            builder.append("\"$name\",\"$code\",\"$mfg\",\"$model\",\"$serial\",\"$type\",\"$category\",\"$acc\",\"$description\",$cost,$quantity,\"$condition\",\"$deptName\"\n")
+            builder.append("\"$name\",\"$code\",\"$mfg\",\"$model\",\"$serial\",\"$type\",\"$acc\",\"$description\",$quantity,\"$condition\",\"$deptName\"\n")
         }
         return builder.toString()
     }
