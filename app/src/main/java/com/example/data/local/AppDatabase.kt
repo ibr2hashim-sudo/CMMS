@@ -7,16 +7,18 @@ import androidx.room.RoomDatabase
 import com.example.data.model.Asset
 import com.example.data.model.Department
 import com.example.data.model.TransferRecord
+import com.example.data.model.Company
 
 @Database(
-    entities = [Asset::class, Department::class, TransferRecord::class],
-    version = 4,
+    entities = [Asset::class, Department::class, TransferRecord::class, Company::class],
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun assetDao(): AssetDao
     abstract fun departmentDao(): DepartmentDao
     abstract fun transferDao(): TransferDao
+    abstract fun companyDao(): CompanyDao
 
     companion object {
         @Volatile

@@ -11,24 +11,37 @@ import com.example.data.model.TransferWithDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
+import com.example.data.local.CompanyDao
+import com.example.data.model.Company
+
 class AssetRepository(
     private val assetDao: AssetDao,
     private val departmentDao: DepartmentDao,
-    private val transferDao: TransferDao
+    private val transferDao: TransferDao,
+    private val companyDao: CompanyDao
 ) {
     val allAssets: Flow<List<Asset>> = assetDao.getAllAssets()
     val allDepartments: Flow<List<Department>> = departmentDao.getAllDepartments()
     val allTransfers: Flow<List<TransferRecord>> = transferDao.getAllTransfers()
+    val allCompanies: Flow<List<Company>> = companyDao.getAllCompanies()
 
     val assetsWithDetails: Flow<List<AssetWithDetails>> = combine(
         assetDao.getAllAssets(),
-        departmentDao.getAllDepartments()
-    ) { assets, departments ->
+        departmentDao.getAllDepartments(),
+        companyDao.getAllCompanies()
+    ) { assets, departments, companies ->
         val deptMap = departments.associateBy { it.id }
+        val compMap = companies.associateBy { it.id.toString() }
         assets.map { asset ->
             val dept = deptMap[asset.currentDepartmentId]
+            // If manufacturer matches a company ID, use the company name, otherwise use manufacturer string as is
+            val companyName = compMap[asset.manufacturer]?.name ?: asset.manufacturer
+            
+            // Create a copy of the asset with the resolved manufacturer name
+            val resolvedAsset = asset.copy(manufacturer = companyName)
+            
             AssetWithDetails(
-                asset = asset,
+                asset = resolvedAsset,
                 departmentName = dept?.name ?: "غير محدد",
                 departmentCode = dept?.code ?: "N/A"
             )

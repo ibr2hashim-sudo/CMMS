@@ -26,7 +26,8 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = AssetRepository(
         database.assetDao(),
         database.departmentDao(),
-        database.transferDao()
+        database.transferDao(),
+        database.companyDao()
     )
 
     // Raw streams from Repository
@@ -276,7 +277,8 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     val condition = getValueForHeader("الجودة", "condition").ifBlank { "NEW" }
                     val model = getValueForHeader("الموديل", "model")
                     val quantity = getValueForHeader("الكمية", "quantity").toIntOrNull() ?: 1
-                    val assetCode = getValueForHeader("كود تعريفي", "assetCode").ifBlank { "AST-${System.currentTimeMillis() % 10000}-$importedCount" }
+                    val assetCode = getValueForHeader("كود تعريفي", "assetCode").ifBlank { getValueForHeader("Asset ID", "id") }
+                    val idValue = assetCode.ifBlank { System.currentTimeMillis().toString() + "-" + importedCount }
                     val accessories = getValueForHeader("الملحقات", "accessories")
                     val manufacturerIdOrName = getValueForHeader("الشركة المصنعة", "manufacturer")
                     val companyName = getValueForHeader("الشركة", "company")
@@ -302,7 +304,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     
                     val asset = Asset(
-                        id = assetCode,
+                        id = idValue,
                         name = nameValue,
                         serialNumber = serial,
                         type = type,
