@@ -142,7 +142,7 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
                         model = model,
                         quantity = quantity,
                         imageUri = localImagePath,
-                        assetCode = assetId,
+                        id = assetId,
                         status = status
                     )
                     
@@ -245,7 +245,7 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
                         assets = assetsWithDetails,
                         onAddDeviceClick = { currentScreen = "add_device" },
                         onDeviceClick = { item ->
-                            viewModel.updateSearchQuery(item.asset.assetCode)
+                            viewModel.updateSearchQuery(item.asset.id)
                             viewModel.updateDepartmentFilter(item.asset.currentDepartmentId)
                             selectedTab = 1
                         }
@@ -261,7 +261,7 @@ fun MainScreen(viewModel: AssetViewModel = viewModel()) {
                     onTypeChanged = { viewModel.updateTypeFilter(it) },
                     onDeptIdChanged = { viewModel.updateDepartmentFilter(it) },
                     onAddAsset = { name, serial, type, cat, desc, cost, deptId, cond, model, qty, img, code, accessories, manufacturer ->
-                        viewModel.addAsset(name, serial, type, cat, desc, cost, deptId, cond, model, qty, img, code, accessories, manufacturer)
+                        viewModel.addAsset(id = code, name = name, serialNumber = serial, type = type, category = cat, description = desc, cost = cost, currentDepartmentId = deptId, condition = cond, model = model, quantity = qty, imageUri = img, accessories = accessories, manufacturer = manufacturer)
                     },
                     onUpdateAsset = { viewModel.updateAsset(it) },
                     onDeleteAsset = { viewModel.deleteAsset(it) },

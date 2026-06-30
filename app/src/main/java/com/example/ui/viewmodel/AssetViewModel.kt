@@ -84,6 +84,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     // Seed some initial assets to demonstrate the application immediately
                     repository.insertAsset(
                         Asset(
+                            id = "AST-SRV-01",
                             name = "خادم رئيسي Dell PowerEdge",
                             serialNumber = "SRV-MX928-11",
                             type = "FIXED",
@@ -97,12 +98,14 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             model = "PowerEdge R750",
                             quantity = 2,
                             imageUri = null,
-                            assetCode = "AST-SRV-01"
+                            accessories = "",
+                            manufacturer = ""
                         )
                     )
 
                     repository.insertAsset(
                         Asset(
+                            id = "AST-LAP-02",
                             name = "حاسوب محمول MacBook Pro 16",
                             serialNumber = "MAC-PRO-0098",
                             type = "MOVABLE",
@@ -116,12 +119,14 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             model = "MacBook Pro M3 Max",
                             quantity = 5,
                             imageUri = null,
-                            assetCode = "AST-LAP-02"
+                            accessories = "",
+                            manufacturer = ""
                         )
                     )
 
                     repository.insertAsset(
                         Asset(
+                            id = "AST-FUR-03",
                             name = "طاولة اجتماعات خشبية فاخرة",
                             serialNumber = "FURN-TB-104",
                             type = "FIXED",
@@ -135,12 +140,14 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             model = "Premium Oak Table",
                             quantity = 1,
                             imageUri = null,
-                            assetCode = "AST-FUR-03"
+                            accessories = "",
+                            manufacturer = ""
                         )
                     )
 
                     repository.insertAsset(
                         Asset(
+                            id = "AST-DIS-04",
                             name = "شاشة عرض ذكية 75 بوصة Sony",
                             serialNumber = "TV-SONY-75A",
                             type = "MOVABLE",
@@ -154,7 +161,8 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                             model = "Bravia XR 75",
                             quantity = 3,
                             imageUri = null,
-                            assetCode = "AST-DIS-04"
+                            accessories = "",
+                            manufacturer = ""
                         )
                     )
                 }
@@ -179,6 +187,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
 
     // Actions
     fun addAsset(
+        id: String,
         name: String,
         serialNumber: String,
         type: String,
@@ -190,13 +199,13 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
         model: String = "",
         quantity: Int = 1,
         imageUri: String? = null,
-        assetCode: String = "",
         accessories: String = "",
         manufacturer: String = "",
         status: String = "ACTIVE"
     ) {
         viewModelScope.launch {
             val asset = Asset(
+                id = id,
                 name = name,
                 serialNumber = serialNumber,
                 type = type,
@@ -210,7 +219,6 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                 model = model,
                 quantity = quantity,
                 imageUri = imageUri,
-                assetCode = assetCode,
                 accessories = accessories,
                 manufacturer = manufacturer
             )
@@ -270,7 +278,11 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     val quantity = getValueForHeader("الكمية", "quantity").toIntOrNull() ?: 1
                     val assetCode = getValueForHeader("كود تعريفي", "assetCode").ifBlank { "AST-${System.currentTimeMillis() % 10000}-$importedCount" }
                     val accessories = getValueForHeader("الملحقات", "accessories")
-                    val manufacturer = getValueForHeader("الشركة المصنعة", "manufacturer")
+                    val manufacturerIdOrName = getValueForHeader("الشركة المصنعة", "manufacturer")
+                    val companyName = getValueForHeader("الشركة", "company")
+                    
+                    // Use company name if available, otherwise fallback to manufacturer
+                    val manufacturer = if (companyName.isNotBlank()) companyName else manufacturerIdOrName
                     
                     // Check if department exists by name, otherwise use default
                     val deptName = getValueForHeader("القسم", "department").trim()
@@ -290,6 +302,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     
                     val asset = Asset(
+                        id = assetCode,
                         name = nameValue,
                         serialNumber = serial,
                         type = type,
@@ -303,7 +316,6 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                         model = model,
                         quantity = quantity,
                         imageUri = null,
-                        assetCode = assetCode,
                         accessories = accessories,
                         manufacturer = manufacturer
                     )
@@ -327,7 +339,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
         val depts = departments.value.associateBy { it.id }
         for (item in assets) {
             val name = item.asset.name.replace(",", " ")
-            val code = item.asset.assetCode.replace(",", " ")
+            val code = item.asset.id.replace(",", " ")
             val mfg = item.asset.manufacturer.replace(",", " ")
             val model = item.asset.model.replace(",", " ")
             val serial = item.asset.serialNumber.replace(",", " ")
@@ -384,7 +396,7 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun transferAsset(
-        assetId: Int,
+        assetId: String,
         fromDeptId: Int,
         toDeptId: Int,
         authorizedBy: String,

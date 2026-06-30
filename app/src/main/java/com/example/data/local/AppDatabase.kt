@@ -10,7 +10,7 @@ import com.example.data.model.TransferRecord
 
 @Database(
     entities = [Asset::class, Department::class, TransferRecord::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

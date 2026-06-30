@@ -16,7 +16,19 @@ class CsvImportService(private val context: Context) {
         val assetList = mutableListOf<Asset>()
         try {
             val inputStream = context.assets.open("assets_data.csv")
-            val reader = BufferedReader(InputStreamReader(inputStream))
+            val bytes = inputStream.readBytes()
+            var startIndex = 0
+            if (bytes.size >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
+                startIndex = 3
+            }
+            var text = String(bytes, startIndex, bytes.size - startIndex, java.nio.charset.StandardCharsets.UTF_8)
+            if (text.contains("\uFFFD")) {
+                try {
+                    text = String(bytes, startIndex, bytes.size - startIndex, java.nio.charset.Charset.forName("Windows-1256"))
+                } catch (e: Exception) {}
+            }
+            
+            val reader = BufferedReader(java.io.StringReader(text))
             
             // قراءة السطر الأول (العناوين/Headers) وتخطيه
             reader.readLine() 
@@ -38,8 +50,8 @@ class CsvImportService(private val context: Context) {
                     val notes = tokens.getOrNull(8)?.trim() ?: ""
 
                     val asset = Asset(
+                        id = assetCode,
                         name = deviceName,
-                        assetCode = assetCode,
                         category = departmentName,
                         serialNumber = serialNumber,
                         type = type,
@@ -50,7 +62,9 @@ class CsvImportService(private val context: Context) {
                         status = status,
                         condition = "GOOD",
                         model = model,
-                        quantity = quantity
+                        quantity = quantity,
+                        accessories = "",
+                        manufacturer = ""
                     )
                     assetList.add(asset)
                 }

@@ -44,7 +44,7 @@ fun DashboardScreen(
         assets.filter { item ->
             val query = searchQuery.trim().lowercase()
             query.isEmpty() ||
-                item.asset.assetCode.lowercase().contains(query) ||
+                item.asset.id.lowercase().contains(query) ||
                 item.asset.name.lowercase().contains(query) ||
                 item.departmentName.lowercase().contains(query)
         }
@@ -157,7 +157,7 @@ fun DashboardScreen(
                     items(filteredAssets, key = { it.asset.id }) { item ->
                         BiomedicalDeviceCard(
                             item = item,
-                            localImagePath = storageService.getImagePath(item.asset.assetCode),
+                            localImagePath = storageService.getImagePath(item.asset.id),
                             onClick = { onDeviceClick(item) }
                         )
                     }
@@ -235,7 +235,7 @@ fun BiomedicalDeviceCard(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = item.asset.assetCode,
+                            text = item.asset.id,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             fontWeight = FontWeight.Bold

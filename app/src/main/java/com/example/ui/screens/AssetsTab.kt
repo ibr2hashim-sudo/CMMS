@@ -59,7 +59,7 @@ fun AssetsTab(
     onAddAsset: (String, String, String, String, String, Double, Int, String, String, Int, String?, String, String, String) -> Unit,
     onUpdateAsset: (Asset) -> Unit,
     onDeleteAsset: (Asset) -> Unit,
-    onTransferAsset: (Int, Int, Int, String, String) -> Unit,
+    onTransferAsset: (String, Int, Int, String, String) -> Unit,
     onImportCsv: (String, (Int, String) -> Unit) -> Unit,
     onExportCsv: () -> String,
     onGetTemplate: () -> String
@@ -441,8 +441,8 @@ fun AssetsTab(
         AddAssetDialog(
             departments = departments,
             onDismiss = { showAddDialog = false },
-            onSave = { name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, assetCode, accessories, manufacturer ->
-                onAddAsset(name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, assetCode, accessories, manufacturer)
+            onSave = { name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer ->
+                onAddAsset(name, serial, type, category, desc, cost, deptId, condition, model, quantity, imageUri, id, accessories, manufacturer)
                 showAddDialog = false
             }
         )
@@ -561,7 +561,7 @@ fun AssetDeckCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = item.asset.assetCode.ifBlank { "N/A" },
+                    text = item.asset.id.ifBlank { "N/A" },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -664,14 +664,14 @@ fun AssetCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        if (item.asset.assetCode.isNotBlank()) {
+                        if (item.asset.id.isNotBlank()) {
                             Box(
                                 modifier = Modifier
                                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = item.asset.assetCode,
+                                    text = item.asset.id,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
@@ -1187,7 +1187,7 @@ fun EditAssetDialog(
     var selectedStatus by remember { mutableStateOf(assetDetails.asset.status) }
 
     // New Fields
-    var assetCode by remember { mutableStateOf(assetDetails.asset.assetCode) }
+    var assetCode by remember { mutableStateOf(assetDetails.asset.id) }
     var model by remember { mutableStateOf(assetDetails.asset.model) }
     var quantityStr by remember { mutableStateOf(assetDetails.asset.quantity.toString()) }
     var imageUri by remember { mutableStateOf<String?>(assetDetails.asset.imageUri) }
@@ -1556,7 +1556,7 @@ fun EditAssetDialog(
                                         model = model,
                                         quantity = quantityStr.toIntOrNull() ?: 1,
                                         imageUri = imageUri,
-                                        assetCode = assetCode,
+                                        id = assetCode,
                                         manufacturer = manufacturer,
                                         accessories = accessories
                                     )
@@ -1850,7 +1850,7 @@ fun AssetDetailsDialog(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            DetailItem(label = "كود تعريفي للأصل:", value = assetDetails.asset.assetCode.ifBlank { "غير متوفر" }, icon = Icons.Default.QrCode)
+                            DetailItem(label = "كود تعريفي للأصل:", value = assetDetails.asset.id.ifBlank { "غير متوفر" }, icon = Icons.Default.QrCode)
                             DetailItem(label = "الموديل:", value = assetDetails.asset.model.ifBlank { "غير متوفر" }, icon = Icons.Default.Dns)
                             DetailItem(label = "الشركة المصنعة:", value = assetDetails.asset.manufacturer.ifBlank { "غير متوفر" }, icon = Icons.Default.PrecisionManufacturing)
                             DetailItem(label = "الكمية المتوفرة:", value = "${assetDetails.asset.quantity} قطع", icon = Icons.Default.Inventory)
