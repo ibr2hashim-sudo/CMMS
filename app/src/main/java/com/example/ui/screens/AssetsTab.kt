@@ -81,10 +81,33 @@ fun AssetsTab(
         uri?.let {
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
-                val text = inputStream?.bufferedReader()?.use { it.readText() } ?: ""
-                if (text.isNotBlank()) {
-                    onImportCsv(text) { count, message ->
-                        importMessage = message
+                val bytes = inputStream?.readBytes() ?: ByteArray(0)
+                if (bytes.isNotEmpty()) {
+                    var startIndex = 0
+                    // Check for UTF-8 BOM (EF BB BF)
+                    if (bytes.size >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
+                        startIndex = 3
+                    }
+                    
+                    var text = String(bytes, startIndex, bytes.size - startIndex, java.nio.charset.StandardCharsets.UTF_8)
+                    
+                    // If the text contains the replacement character (), it means UTF-8 decoding failed for some bytes.
+                    // In that case, fallback to Windows-1256 which is common for Arabic CSV files.
+                    if (text.contains("\uFFFD")) {
+                        try {
+                            text = String(bytes, startIndex, bytes.size - startIndex, java.nio.charset.Charset.forName("Windows-1256"))
+                        } catch (e: Exception) {
+                            // Fallback to the original text if Windows-1256 is not supported
+                        }
+                    }
+
+                    if (text.isNotBlank()) {
+                        onImportCsv(text) { count, message ->
+                            importMessage = message
+                            showImportStatusDialog = true
+                        }
+                    } else {
+                        importMessage = "الملف المختار فارغ!"
                         showImportStatusDialog = true
                     }
                 } else {
