@@ -236,6 +236,11 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                 val defaultDept = departmentsList.firstOrNull()
                 val defaultDeptId = defaultDept?.id ?: 1
                 
+                // Map to store department name (trimmed lowercase) to its ID for avoiding duplicates
+                val departmentsMap = departmentsList.associate { 
+                    it.name.trim().lowercase() to it.id 
+                }.toMutableMap()
+                
                 for (i in 1 until lines.size) {
                     val line = lines[i].trim()
                     if (line.isBlank()) continue
@@ -268,18 +273,19 @@ class AssetViewModel(application: Application) : AndroidViewModel(application) {
                     val manufacturer = getValueForHeader("الشركة المصنعة", "manufacturer")
                     
                     // Check if department exists by name, otherwise use default
-                    val deptName = getValueForHeader("القسم", "department")
+                    val deptName = getValueForHeader("القسم", "department").trim()
                     var deptId = defaultDeptId
                     if (deptName.isNotBlank()) {
-                        val found = departmentsList.find { it.name.equals(deptName, ignoreCase = true) || it.code.equals(deptName, ignoreCase = true) }
-                        if (found != null) {
-                            deptId = found.id
+                        val deptKey = deptName.lowercase()
+                        if (departmentsMap.containsKey(deptKey)) {
+                            deptId = departmentsMap[deptKey]!!
                         } else {
                             // Create department dynamically
                             val newDeptId = repository.insertDepartment(
                                 Department(name = deptName, code = deptName.take(3).uppercase(), description = "تم إنشاؤه تلقائياً")
                             )
                             deptId = newDeptId.toInt()
+                            departmentsMap[deptKey] = deptId
                         }
                     }
                     
